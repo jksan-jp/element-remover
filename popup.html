@@ -1,10 +1,25 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Element Remover</title>
-</head>
-<body>
-  <h1>Element Remover</h1>
-  <p>Specified elements will be removed from web pages.</p>
-</body>
+  <head>
+    <title>Remove Element Extension</title>
+    <style>
+      body {
+        width: 200px;
+        height: 100px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+      button {
+        padding: 10px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="removeElementButton">Remove Element</button>
+    <script src="popup.js"></script>
+  </body>
 </html>
