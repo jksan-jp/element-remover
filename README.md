@@ -1,93 +1,101 @@
 # element-remover
 
+Google Chromeの拡張機能を作成して、指定されたセレクターを削除する方法を説明します。以下の手順に従ってください。
 
-Chrome拡張機能を作成して指定された要素を削除するには、次の手順に従います。
+### 手順 1: 拡張機能の基本ファイルを作成
 
-### 1. マニフェストファイルの作成
+1. **プロジェクトフォルダを作成**
+   任意の名前のフォルダを作成します。例えば「remove-element-extension」。
 
-まず、拡張機能の設定情報を含む `manifest.json` ファイルを作成します。これは拡張機能の基本情報を定義するために必要です。
+2. **manifest.jsonファイルを作成**
+   プロジェクトフォルダ内に `manifest.json` ファイルを作成し、以下の内容を記述します。
 
-`manifest.json`:
-```json
-{
-  "manifest_version": 3,
-  "name": "Element Remover",
-  "version": "1.0",
-  "description": "Remove specified elements from web pages",
-  "permissions": [
-    "activeTab",
-    "scripting"
-  ],
-  "background": {
-    "service_worker": "background.js"
-  },
-  "action": {
-    "default_popup": "popup.html"
-  },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"]
-    }
-  ]
-}
-```
+   ```json
+   {
+     "manifest_version": 3,
+     "name": "Remove Element Extension",
+     "version": "1.0",
+     "description": "指定されたセレクターを削除する拡張機能",
+     "permissions": [
+       "activeTab",
+       "scripting"
+     ],
+     "action": {
+       "default_popup": "popup.html",
+       "default_icon": {
+         "16": "icon.png",
+         "48": "icon.png",
+         "128": "icon.png"
+       }
+     }
+   }
+   ```
 
-### 2. コンテンツスクリプトの作成
+3. **popup.htmlファイルを作成**
+   プロジェクトフォルダ内に `popup.html` ファイルを作成し、以下の内容を記述します。
 
-次に、特定の要素を削除する `content.js` ファイルを作成します。このスクリプトはWebページ上で実行されます。
+   ```html
+   <!DOCTYPE html>
+   <html>
+     <head>
+       <title>Remove Element Extension</title>
+       <style>
+         body {
+           width: 200px;
+           height: 100px;
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           flex-direction: column;
+         }
+         button {
+           padding: 10px;
+           font-size: 16px;
+           cursor: pointer;
+         }
+       </style>
+     </head>
+     <body>
+       <button id="removeElementButton">Remove Element</button>
+       <script src="popup.js"></script>
+     </body>
+   </html>
+   ```
 
-`content.js`:
-```javascript
-document.addEventListener('DOMContentLoaded', function() {
-    // 「div role="navigation"」を削除
-    var navigationDiv = document.querySelector('div[role="navigation"]');
-    if (navigationDiv) {
-        navigationDiv.remove();
-    }
+4. **popup.jsファイルを作成**
+   プロジェクトフォルダ内に `popup.js` ファイルを作成し、以下の内容を記述します。
 
-    // 「div class="AppHeader-globalBar js-global-bar"」を削除
-    var globalBarDiv = document.querySelector('div.AppHeader-globalBar.js-global-bar');
-    if (globalBarDiv) {
-        globalBarDiv.remove();
-    }
-});
-```
+   ```javascript
+   document.getElementById('removeElementButton').addEventListener('click', () => {
+     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+       chrome.scripting.executeScript({
+         target: { tabId: tabs[0].id },
+         function: removeElements
+       });
+     });
+   });
 
-### 3. 背景スクリプトの作成
+   function removeElements() {
+     const selectors = [
+       'body > div.logged-in.env-production.page-responsive.height-full.d-flex.flex-column > div.position-relative.js-header-wrapper > header'
+     ];
+     selectors.forEach(selector => {
+       const element = document.querySelector(selector);
+       if (element) {
+         element.remove();
+       }
+     });
+   }
+   ```
 
-`background.js` ファイルはオプションですが、拡張機能の背景で実行されるスクリプトです。
+5. **アイコン画像を追加**
+   プロジェクトフォルダ内に「icon.png」という名前のアイコン画像ファイルを追加します。適切なサイズ（例：128x128ピクセル）の画像を使用してください。
 
-`background.js`:
-```javascript
-chrome.runtime.onInstalled.addListener(() => {
-  console.log('Element Remover extension installed.');
-});
-```
+### 手順 2: Chromeに拡張機能をインストール
 
-### 4. ポップアップHTMLの作成（オプション）
-
-拡張機能のアイコンをクリックしたときに表示されるポップアップを作成することもできます。
-
-`popup.html`:
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Element Remover</title>
-</head>
-<body>
-  <h1>Element Remover</h1>
-  <p>Specified elements will be removed from web pages.</p>
-</body>
-</html>
-```
-
-### 5. 拡張機能のインストール
-
-1. 上記のファイルをフォルダーに保存します（例: `element-remover`）。
-2. Chromeブラウザを開き、「拡張機能」を管理するページに移動します（`chrome://extensions/`）。
+1. **Chromeブラウザを開く**。
+2. アドレスバーに `chrome://extensions/` を入力して、エンターボタンを押します。
 3. 右上の「デベロッパーモード」を有効にします。
-4. 「パッケージ化されていない拡張機能を読み込む」をクリックし、作成したフォルダーを選択します。
+4. 左上の「パッケージ化されていない拡張機能を読み込む」をクリックし、プロジェクトフォルダを選択します。
 
-これで、指定された要素を削除するChrome拡張機能がインストールされ、動作するはずです。
+これで、拡張機能がChromeにインストールされます。拡張機能のアイコンをクリックして、表示されるポップアップの「Remove Element」ボタンを押すと、指定されたセレクターが削除されるはずです。
